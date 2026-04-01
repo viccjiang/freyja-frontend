@@ -1,4 +1,4 @@
-import Http from '~/composables/Http'
+import Http from '~/composables/useHttp'
 
 const roomInfoAPI = {
   getRoomsApi: (options = {}) => {

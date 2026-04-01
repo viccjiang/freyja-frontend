@@ -26,9 +26,9 @@ async function request(url: string, options: any) {
 
   const params = defu(options, defaults)
 
-  const { data: response, refresh, execute } = await useFetch(url, params)
+  const { data, status, error, refresh, clear, execute } = await useFetch(url, params)
 
-  return { response, refresh, execute }
+  return { data, status, error, refresh, clear, execute }
 }
 
 const Http = {
