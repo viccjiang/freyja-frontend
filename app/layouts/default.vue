@@ -1,9 +1,14 @@
 <script setup>
-const token = useCookie('token')
+const token = useTokenCookie()
 const isLoggedIn = computed(() => !!token.value)
 
 function logout() {
+  const commonStore = useCommonStore()
+  const toast = useToast()
   token.value = null
+  commonStore.token = ''
+  commonStore.me = {}
+  toast.success('已成功登出')
   navigateTo('/')
 }
 </script>

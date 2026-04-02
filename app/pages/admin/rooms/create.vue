@@ -1,8 +1,9 @@
 <script setup>
 import adminRoomAPI from '@/composables/api/adminRoomApi'
 
-definePageMeta({ layout: 'admin' })
+definePageMeta({ layout: 'admin', middleware: 'auth' })
 
+const toast = useToast()
 const isSubmitting = ref(false)
 const errorMsg = ref('')
 
@@ -18,6 +19,7 @@ async function handleCreate(payload) {
     return
   }
 
+  toast.success('房型新增成功')
   navigateTo('/admin/rooms')
 }
 </script>

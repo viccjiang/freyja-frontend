@@ -2,8 +2,9 @@
 import adminRoomAPI from '@/composables/api/adminRoomApi'
 import roomInfoAPI from '@/composables/api/roomInfoApi'
 
-definePageMeta({ layout: 'admin' })
+definePageMeta({ layout: 'admin', middleware: 'auth' })
 
+const toast = useToast()
 const route = useRoute()
 const roomId = computed(() => route.params.id)
 
@@ -29,6 +30,7 @@ async function handleUpdate(payload) {
     return
   }
 
+  toast.success('房型更新成功')
   navigateTo('/admin/rooms')
 }
 </script>

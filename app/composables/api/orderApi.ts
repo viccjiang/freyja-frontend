@@ -1,33 +1,18 @@
 import Http from '~/composables/useHttp'
-
-export interface OrderPayload {
-  roomId: string
-  checkInDate: string
-  checkOutDate: string
-  peopleNum: number
-  userInfo: {
-    name: string
-    email: string
-    phone: string
-    address: {
-      zipcode: number
-      detail: string
-    }
-  }
-}
+import type { ApiResponse, Order, OrderPayload } from '~/types/api'
 
 const orderAPI = {
   getOrders: (options = {}) => {
-    return Http.get('/api/v1/orders/', options)
+    return Http.get<ApiResponse<Order[]>>('/api/v1/orders/', options)
   },
   getOrder: (id: string, options = {}) => {
-    return Http.get(`/api/v1/orders/${id}`, options)
+    return Http.get<ApiResponse<Order>>(`/api/v1/orders/${id}`, options)
   },
   createOrder: (body: OrderPayload, options = {}) => {
-    return Http.post('/api/v1/orders/', body, options)
+    return Http.post<ApiResponse<Order>>('/api/v1/orders/', body, options)
   },
   deleteOrder: (id: string, options = {}) => {
-    return Http.delete(`/api/v1/orders/${id}`, options)
+    return Http.delete<ApiResponse<null>>(`/api/v1/orders/${id}`, options)
   }
 }
 

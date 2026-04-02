@@ -1,4 +1,7 @@
 <script setup>
+import { toTypedSchema } from '@vee-validate/yup'
+import * as yup from 'yup'
+
 const props = defineProps({
   initialData: { type: Object, default: null },
   submitLabel: { type: String, default: '儲存' },
@@ -49,36 +52,68 @@ function mergeInfo(defaults, existing) {
   })
 }
 
-const form = reactive({
-  name: props.initialData?.name || '',
-  description: props.initialData?.description || '',
-  imageUrl: props.initialData?.imageUrl || '',
-  imageUrlList: props.initialData?.imageUrlList?.join('\n') || '',
-  areaInfo: props.initialData?.areaInfo || '',
-  bedInfo: props.initialData?.bedInfo || '',
-  maxPeople: props.initialData?.maxPeople || 2,
-  price: props.initialData?.price || 0,
-  layoutInfo: mergeInfo(defaultLayoutInfo, props.initialData?.layoutInfo),
-  facilityInfo: mergeInfo(defaultFacilityInfo, props.initialData?.facilityInfo),
-  amenityInfo: mergeInfo(defaultAmenityInfo, props.initialData?.amenityInfo)
+const layoutInfo = reactive(mergeInfo(defaultLayoutInfo, props.initialData?.layoutInfo))
+const facilityInfo = reactive(mergeInfo(defaultFacilityInfo, props.initialData?.facilityInfo))
+const amenityInfo = reactive(mergeInfo(defaultAmenityInfo, props.initialData?.amenityInfo))
+
+const schema = toTypedSchema(
+  yup.object({
+    name: yup.string().required('請輸入房型名稱'),
+    description: yup.string().required('請輸入房型描述'),
+    price: yup.number().required('請輸入價格').min(1, '價格必須大於 0').typeError('請輸入數字'),
+    maxPeople: yup.number().required('請輸入人數上限').min(1, '至少 1 人').max(10, '最多 10 人').typeError('請輸入數字'),
+    areaInfo: yup.string(),
+    bedInfo: yup.string(),
+    imageUrl: yup.string().required('請輸入主圖 URL').url('請輸入正確的 URL 格式'),
+    imageUrlList: yup.string()
+  })
+)
+
+const { handleSubmit } = useForm({
+  validationSchema: schema,
+  initialValues: {
+    name: props.initialData?.name || '',
+    description: props.initialData?.description || '',
+    price: props.initialData?.price || 0,
+    maxPeople: props.initialData?.maxPeople || 2,
+    areaInfo: props.initialData?.areaInfo || '',
+    bedInfo: props.initialData?.bedInfo || '',
+    imageUrl: props.initialData?.imageUrl || '',
+    imageUrlList: props.initialData?.imageUrlList?.join('\n') || ''
+  }
 })
 
-function handleSubmit() {
+const { value: name, errorMessage: nameError } = useField('name')
+const { value: description, errorMessage: descriptionError } = useField('description')
+const { value: price, errorMessage: priceError } = useField('price')
+const { value: maxPeople, errorMessage: maxPeopleError } = useField('maxPeople')
+const { value: areaInfo } = useField('areaInfo')
+const { value: bedInfo } = useField('bedInfo')
+const { value: imageUrl, errorMessage: imageUrlError } = useField('imageUrl')
+const { value: imageUrlList } = useField('imageUrlList')
+
+const onSubmit = handleSubmit((values) => {
   const payload = {
-    ...form,
-    imageUrlList: form.imageUrlList
+    ...values,
+    imageUrlList: (values.imageUrlList || '')
       .split('\n')
       .map(s => s.trim())
       .filter(Boolean),
-    price: Number(form.price),
-    maxPeople: Number(form.maxPeople)
+    price: Number(values.price),
+    maxPeople: Number(values.maxPeople),
+    layoutInfo,
+    facilityInfo,
+    amenityInfo
   }
   emit('submit', payload)
-}
+})
+
+const inputClass = 'w-full rounded-lg border border-gray-300 px-4 py-2.5 transition focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500'
+const inputErrorClass = 'w-full rounded-lg border border-red-300 px-4 py-2.5 transition focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500'
 </script>
 
 <template>
-  <form class="space-y-8" @submit.prevent="handleSubmit">
+  <form class="space-y-8" @submit="onSubmit">
     <!-- 基本資訊 -->
     <section class="rounded-xl border bg-white p-6 shadow-sm">
       <h3 class="mb-6 text-lg font-bold text-gray-800">基本資訊</h3>
@@ -86,60 +121,60 @@ function handleSubmit() {
         <div class="md:col-span-2">
           <label class="mb-1 block text-sm font-medium text-gray-700">房型名稱 *</label>
           <input
-            v-model="form.name"
+            v-model="name"
             type="text"
-            required
             placeholder="例：豪華雙人房"
-            class="w-full rounded-lg border border-gray-300 px-4 py-2.5 transition focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+            :class="nameError ? inputErrorClass : inputClass"
           />
+          <p v-if="nameError" class="mt-1 text-xs text-red-500">{{ nameError }}</p>
         </div>
         <div class="md:col-span-2">
           <label class="mb-1 block text-sm font-medium text-gray-700">房型描述 *</label>
           <textarea
-            v-model="form.description"
-            required
+            v-model="description"
             rows="4"
             placeholder="請輸入房型描述..."
-            class="w-full rounded-lg border border-gray-300 px-4 py-2.5 transition focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+            :class="descriptionError ? inputErrorClass : inputClass"
           />
+          <p v-if="descriptionError" class="mt-1 text-xs text-red-500">{{ descriptionError }}</p>
         </div>
         <div>
           <label class="mb-1 block text-sm font-medium text-gray-700">價格 (NT$) *</label>
           <input
-            v-model.number="form.price"
+            v-model.number="price"
             type="number"
-            required
             min="0"
-            class="w-full rounded-lg border border-gray-300 px-4 py-2.5 transition focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+            :class="priceError ? inputErrorClass : inputClass"
           />
+          <p v-if="priceError" class="mt-1 text-xs text-red-500">{{ priceError }}</p>
         </div>
         <div>
           <label class="mb-1 block text-sm font-medium text-gray-700">人數上限 *</label>
           <input
-            v-model.number="form.maxPeople"
+            v-model.number="maxPeople"
             type="number"
-            required
             min="1"
             max="10"
-            class="w-full rounded-lg border border-gray-300 px-4 py-2.5 transition focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+            :class="maxPeopleError ? inputErrorClass : inputClass"
           />
+          <p v-if="maxPeopleError" class="mt-1 text-xs text-red-500">{{ maxPeopleError }}</p>
         </div>
         <div>
           <label class="mb-1 block text-sm font-medium text-gray-700">坪數</label>
           <input
-            v-model="form.areaInfo"
+            v-model="areaInfo"
             type="text"
             placeholder="例：12"
-            class="w-full rounded-lg border border-gray-300 px-4 py-2.5 transition focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+            :class="inputClass"
           />
         </div>
         <div>
           <label class="mb-1 block text-sm font-medium text-gray-700">床型</label>
           <input
-            v-model="form.bedInfo"
+            v-model="bedInfo"
             type="text"
             placeholder="例：一張大床"
-            class="w-full rounded-lg border border-gray-300 px-4 py-2.5 transition focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+            :class="inputClass"
           />
         </div>
       </div>
@@ -152,23 +187,23 @@ function handleSubmit() {
         <div>
           <label class="mb-1 block text-sm font-medium text-gray-700">主圖 URL *</label>
           <input
-            v-model="form.imageUrl"
+            v-model="imageUrl"
             type="url"
-            required
             placeholder="https://example.com/image.jpg"
-            class="w-full rounded-lg border border-gray-300 px-4 py-2.5 transition focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+            :class="imageUrlError ? inputErrorClass : inputClass"
           />
-          <div v-if="form.imageUrl" class="mt-3 h-40 w-64 overflow-hidden rounded-lg bg-gray-100">
-            <img :src="form.imageUrl" alt="預覽" class="h-full w-full object-cover" />
+          <p v-if="imageUrlError" class="mt-1 text-xs text-red-500">{{ imageUrlError }}</p>
+          <div v-if="imageUrl && !imageUrlError" class="mt-3 h-40 w-64 overflow-hidden rounded-lg bg-gray-100">
+            <img :src="imageUrl" alt="預覽" class="h-full w-full object-cover" />
           </div>
         </div>
         <div>
           <label class="mb-1 block text-sm font-medium text-gray-700">圖片列表（每行一個 URL）</label>
           <textarea
-            v-model="form.imageUrlList"
+            v-model="imageUrlList"
             rows="4"
             placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
-            class="w-full rounded-lg border border-gray-300 px-4 py-2.5 font-mono text-sm transition focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+            :class="`${inputClass} font-mono text-sm`"
           />
         </div>
       </div>
@@ -179,7 +214,7 @@ function handleSubmit() {
       <h3 class="mb-6 text-lg font-bold text-gray-800">房間格局</h3>
       <div class="flex flex-wrap gap-3">
         <label
-          v-for="(item, idx) in form.layoutInfo"
+          v-for="(item, idx) in layoutInfo"
           :key="idx"
           class="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2.5 transition"
           :class="item.isProvide ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-gray-200 bg-white text-gray-500'"
@@ -195,7 +230,7 @@ function handleSubmit() {
       <h3 class="mb-6 text-lg font-bold text-gray-800">房間設施</h3>
       <div class="flex flex-wrap gap-3">
         <label
-          v-for="(item, idx) in form.facilityInfo"
+          v-for="(item, idx) in facilityInfo"
           :key="idx"
           class="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2.5 transition"
           :class="item.isProvide ? 'border-amber-300 bg-amber-50 text-amber-800' : 'border-gray-200 bg-white text-gray-500'"
@@ -211,7 +246,7 @@ function handleSubmit() {
       <h3 class="mb-6 text-lg font-bold text-gray-800">備品提供</h3>
       <div class="flex flex-wrap gap-3">
         <label
-          v-for="(item, idx) in form.amenityInfo"
+          v-for="(item, idx) in amenityInfo"
           :key="idx"
           class="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2.5 transition"
           :class="item.isProvide ? 'border-blue-300 bg-blue-50 text-blue-800' : 'border-gray-200 bg-white text-gray-500'"

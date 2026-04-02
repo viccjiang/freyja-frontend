@@ -1,8 +1,9 @@
 <script setup>
 import adminRoomAPI from '@/composables/api/adminRoomApi'
 
-definePageMeta({ layout: 'admin' })
+definePageMeta({ layout: 'admin', middleware: 'auth' })
 
+const toast = useToast()
 const rooms = ref([])
 const isLoading = ref(true)
 const deleteTarget = ref(null)
@@ -18,6 +19,7 @@ async function confirmDelete() {
   if (!deleteTarget.value) return
   await adminRoomAPI.deleteRoom(deleteTarget.value._id, { key: `delete-${deleteTarget.value._id}-${Date.now()}` })
   deleteTarget.value = null
+  toast.success('房型已刪除')
   await fetchRooms()
 }
 

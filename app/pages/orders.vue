@@ -1,11 +1,9 @@
 <script setup>
 import orderAPI from '@/composables/api/orderApi'
 
-const token = useCookie('token')
-if (!token.value) {
-  navigateTo('/login')
-}
+definePageMeta({ middleware: 'auth' })
 
+const toast = useToast()
 const orders = ref([])
 const isLoading = ref(true)
 const cancelTarget = ref(null)
@@ -21,6 +19,7 @@ async function confirmCancel() {
   if (!cancelTarget.value) return
   await orderAPI.deleteOrder(cancelTarget.value._id, { key: `cancel-${Date.now()}` })
   cancelTarget.value = null
+  toast.success('訂單已取消')
   await fetchOrders()
 }
 

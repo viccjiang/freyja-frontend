@@ -1,8 +1,11 @@
 import { defu } from 'defu'
+import type { UseFetchOptions } from 'nuxt/app'
 
-async function request(url: string, options: any) {
+type HttpOptions = Omit<UseFetchOptions<unknown>, 'method' | 'body'>
+
+async function request<T = any>(url: string, options: any) {
   const config = useRuntimeConfig()
-  const token = useCookie('token')
+  const token = useTokenCookie()
 
   const defaults = {
     baseURL: config.public.apiBase,
@@ -14,32 +17,32 @@ async function request(url: string, options: any) {
       }
     },
     onResponseError({ response }: { response: { status: number } }) {
-      if (import.meta.client) {
+      if (import.meta.client && response.status === 403) {
+        const token = useTokenCookie()
+        token.value = null
+        navigateTo('/login')
       }
-      setTimeout(() => {
-        if (response.status === 403) {
-          navigateTo('/login')
-        }
-      }, 2000)
     }
   }
 
   const params = defu(options, defaults)
 
-  const { data, status, error, refresh, clear, execute } = await useFetch(url, params)
+  const { data, status, error, refresh, clear, execute } = await useFetch<T>(url, params)
 
   return { data, status, error, refresh, clear, execute }
 }
 
 const Http = {
-  get: (url: string, options: any = {}) => request(url, { ...options, method: 'GET' }),
-  post: (url: string, body: any, options: any = {}) =>
-    request(url, { ...options, method: 'POST', body }),
-  put: (url: string, body: any, options: any = {}) =>
-    request(url, { ...options, method: 'PUT', body }),
-  delete: (url: string, options: any = {}) => request(url, { ...options, method: 'DELETE' }),
-  patch: (url: string, body: any, options: any = {}) =>
-    request(url, { ...options, method: 'PATCH', body })
+  get: <T = any>(url: string, options: HttpOptions = {}) =>
+    request<T>(url, { ...options, method: 'GET' }),
+  post: <T = any>(url: string, body: unknown, options: HttpOptions = {}) =>
+    request<T>(url, { ...options, method: 'POST', body }),
+  put: <T = any>(url: string, body: unknown, options: HttpOptions = {}) =>
+    request<T>(url, { ...options, method: 'PUT', body }),
+  delete: <T = any>(url: string, options: HttpOptions = {}) =>
+    request<T>(url, { ...options, method: 'DELETE' }),
+  patch: <T = any>(url: string, body: unknown, options: HttpOptions = {}) =>
+    request<T>(url, { ...options, method: 'PATCH', body })
 }
 
 export default Http

@@ -1,38 +1,36 @@
 <script setup>
 import roomInfoAPI from '@/composables/api/roomInfoApi'
 import orderAPI from '@/composables/api/orderApi'
+import { toTypedSchema } from '@vee-validate/yup'
+import * as yup from 'yup'
 
 const route = useRoute()
 const roomId = computed(() => route.params.id)
-const token = useCookie('token')
+const token = useTokenCookie()
+const toast = useToast()
 
 const room = ref(null)
 
 const { data } = await roomInfoAPI.getRoomInfoApi(roomId.value)
 room.value = data.value?.result || null
 
-const today = new Date().toISOString().split('T')[0]
-const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+const today = new Date()
+today.setHours(0, 0, 0, 0)
 
-const booking = reactive({
-  checkInDate: tomorrow,
-  checkOutDate: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0],
-  peopleNum: 1,
-  name: '',
-  email: '',
-  phone: '',
-  zipcode: '',
-  addressDetail: ''
-})
+const checkInDate = ref(new Date(Date.now() + 86400000))
+const checkOutDate = ref(new Date(Date.now() + 86400000 * 2))
+const peopleNum = ref(1)
+
+function toDateString(date) {
+  return date.toISOString().split('T')[0]
+}
 
 const showBookingModal = ref(false)
-const isSubmitting = ref(false)
-const errorMsg = ref('')
 const successOrder = ref(null)
 
 const nights = computed(() => {
-  if (!booking.checkInDate || !booking.checkOutDate) return 0
-  const diff = new Date(booking.checkOutDate) - new Date(booking.checkInDate)
+  if (!checkInDate.value || !checkOutDate.value) return 0
+  const diff = checkOutDate.value.getTime() - checkInDate.value.getTime()
   return Math.max(0, Math.ceil(diff / 86400000))
 })
 
@@ -45,43 +43,70 @@ function openBooking() {
     navigateTo('/login')
     return
   }
-  errorMsg.value = ''
   successOrder.value = null
   showBookingModal.value = true
 }
 
-async function submitOrder() {
-  isSubmitting.value = true
-  errorMsg.value = ''
+const bookingSchema = toTypedSchema(
+  yup.object({
+    name: yup.string().required('請輸入姓名'),
+    email: yup.string().required('請輸入電子信箱').email('信箱格式不正確'),
+    phone: yup.string().required('請輸入手機號碼').matches(/^09\d{8}$/, '請輸入正確的手機號碼'),
+    zipcode: yup.string().required('請輸入郵遞區號').matches(/^\d{3,6}$/, '請輸入正確的郵遞區號'),
+    addressDetail: yup.string().required('請輸入地址')
+  })
+)
+
+const {
+  handleSubmit: handleBookingSubmit,
+  isSubmitting,
+  resetForm
+} = useForm({ validationSchema: bookingSchema })
+
+const { value: bName, errorMessage: nameError } = useField('name')
+const { value: bEmail, errorMessage: bEmailError } = useField('email')
+const { value: bPhone, errorMessage: phoneError } = useField('phone')
+const { value: bZipcode, errorMessage: zipcodeError } = useField('zipcode')
+const { value: bAddress, errorMessage: addressError } = useField('addressDetail')
+const serverError = ref('')
+
+const submitOrder = handleBookingSubmit(async (values) => {
+  serverError.value = ''
 
   const { data, error } = await orderAPI.createOrder(
     {
       roomId: roomId.value,
-      checkInDate: booking.checkInDate,
-      checkOutDate: booking.checkOutDate,
-      peopleNum: Number(booking.peopleNum),
+      checkInDate: toDateString(checkInDate.value),
+      checkOutDate: toDateString(checkOutDate.value),
+      peopleNum: Number(peopleNum.value),
       userInfo: {
-        name: booking.name,
-        email: booking.email,
-        phone: booking.phone,
+        name: values.name,
+        email: values.email,
+        phone: values.phone,
         address: {
-          zipcode: Number(booking.zipcode),
-          detail: booking.addressDetail
+          zipcode: Number(values.zipcode),
+          detail: values.addressDetail
         }
       }
     },
     { key: `create-order-${Date.now()}` }
   )
 
-  isSubmitting.value = false
-
   if (error.value) {
-    errorMsg.value = error.value?.data?.message || '預訂失敗，請檢查欄位後重試'
+    serverError.value = error.value?.data?.message || '預訂失敗，請檢查欄位後重試'
     return
   }
 
   successOrder.value = data.value?.result
-}
+  toast.success('預訂成功，祝您旅途愉快！')
+})
+
+watch(showBookingModal, (val) => {
+  if (val && !successOrder.value) {
+    resetForm()
+    serverError.value = ''
+  }
+})
 </script>
 
 <template>
@@ -221,30 +246,52 @@ async function submitOrder() {
                 <label class="mb-1.5 block text-xs font-medium tracking-wider text-mocha-500">
                   入住日期
                 </label>
-                <input
-                  v-model="booking.checkInDate"
-                  type="date"
-                  :min="today"
-                  class="w-full rounded-2xl border border-mocha-100 bg-cream px-4 py-3 text-mocha-700 transition duration-300 focus:border-mocha-300 focus:outline-none focus:ring-1 focus:ring-mocha-300"
-                />
+                <ClientOnly>
+                  <VDatePicker
+                    v-model="checkInDate"
+                    :min-date="today"
+                    :popover="{ placement: 'bottom-start' }"
+                  >
+                    <template #default="{ togglePopover, inputValue }">
+                      <button
+                        type="button"
+                        class="w-full rounded-2xl border border-mocha-100 bg-cream px-4 py-3 text-left text-mocha-700 transition duration-300 focus:border-mocha-300 focus:outline-none focus:ring-1 focus:ring-mocha-300"
+                        @click="togglePopover"
+                      >
+                        {{ inputValue || '選擇日期' }}
+                      </button>
+                    </template>
+                  </VDatePicker>
+                </ClientOnly>
               </div>
               <div>
                 <label class="mb-1.5 block text-xs font-medium tracking-wider text-mocha-500">
                   退房日期
                 </label>
-                <input
-                  v-model="booking.checkOutDate"
-                  type="date"
-                  :min="booking.checkInDate"
-                  class="w-full rounded-2xl border border-mocha-100 bg-cream px-4 py-3 text-mocha-700 transition duration-300 focus:border-mocha-300 focus:outline-none focus:ring-1 focus:ring-mocha-300"
-                />
+                <ClientOnly>
+                  <VDatePicker
+                    v-model="checkOutDate"
+                    :min-date="checkInDate"
+                    :popover="{ placement: 'bottom-start' }"
+                  >
+                    <template #default="{ togglePopover, inputValue }">
+                      <button
+                        type="button"
+                        class="w-full rounded-2xl border border-mocha-100 bg-cream px-4 py-3 text-left text-mocha-700 transition duration-300 focus:border-mocha-300 focus:outline-none focus:ring-1 focus:ring-mocha-300"
+                        @click="togglePopover"
+                      >
+                        {{ inputValue || '選擇日期' }}
+                      </button>
+                    </template>
+                  </VDatePicker>
+                </ClientOnly>
               </div>
               <div>
                 <label class="mb-1.5 block text-xs font-medium tracking-wider text-mocha-500">
                   人數
                 </label>
                 <select
-                  v-model="booking.peopleNum"
+                  v-model="peopleNum"
                   class="w-full rounded-2xl border border-mocha-100 bg-cream px-4 py-3 text-mocha-700 transition duration-300 focus:border-mocha-300 focus:outline-none focus:ring-1 focus:ring-mocha-300"
                 >
                   <option v-for="n in room.maxPeople || 2" :key="n" :value="n">
@@ -365,12 +412,12 @@ async function submitOrder() {
             </p>
           </div>
 
-          <form class="p-8" @submit.prevent="submitOrder">
+          <form class="p-8" @submit="submitOrder">
             <div
-              v-if="errorMsg"
+              v-if="serverError"
               class="mb-5 rounded-2xl border border-red-100 bg-red-50 px-5 py-3 text-sm text-red-600"
             >
-              {{ errorMsg }}
+              {{ serverError }}
             </div>
 
             <div class="space-y-5">
@@ -379,12 +426,13 @@ async function submitOrder() {
                   姓名 *
                 </label>
                 <input
-                  v-model="booking.name"
+                  v-model="bName"
                   type="text"
-                  required
                   placeholder="請輸入真實姓名"
-                  class="w-full rounded-2xl border border-mocha-100 bg-cream px-4 py-3 text-mocha-700 transition duration-300 placeholder:text-mocha-300 focus:border-mocha-300 focus:outline-none focus:ring-1 focus:ring-mocha-300"
+                  class="w-full rounded-2xl border bg-cream px-4 py-3 text-mocha-700 transition duration-300 placeholder:text-mocha-300 focus:outline-none focus:ring-1"
+                  :class="nameError ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : 'border-mocha-100 focus:border-mocha-300 focus:ring-mocha-300'"
                 />
+                <p v-if="nameError" class="mt-1.5 text-xs tracking-wider text-red-500">{{ nameError }}</p>
               </div>
 
               <div>
@@ -392,12 +440,13 @@ async function submitOrder() {
                   電子信箱 *
                 </label>
                 <input
-                  v-model="booking.email"
+                  v-model="bEmail"
                   type="email"
-                  required
                   placeholder="name@example.com"
-                  class="w-full rounded-2xl border border-mocha-100 bg-cream px-4 py-3 text-mocha-700 transition duration-300 placeholder:text-mocha-300 focus:border-mocha-300 focus:outline-none focus:ring-1 focus:ring-mocha-300"
+                  class="w-full rounded-2xl border bg-cream px-4 py-3 text-mocha-700 transition duration-300 placeholder:text-mocha-300 focus:outline-none focus:ring-1"
+                  :class="bEmailError ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : 'border-mocha-100 focus:border-mocha-300 focus:ring-mocha-300'"
                 />
+                <p v-if="bEmailError" class="mt-1.5 text-xs tracking-wider text-red-500">{{ bEmailError }}</p>
               </div>
 
               <div>
@@ -405,12 +454,13 @@ async function submitOrder() {
                   手機號碼 *
                 </label>
                 <input
-                  v-model="booking.phone"
+                  v-model="bPhone"
                   type="tel"
-                  required
                   placeholder="0912345678"
-                  class="w-full rounded-2xl border border-mocha-100 bg-cream px-4 py-3 text-mocha-700 transition duration-300 placeholder:text-mocha-300 focus:border-mocha-300 focus:outline-none focus:ring-1 focus:ring-mocha-300"
+                  class="w-full rounded-2xl border bg-cream px-4 py-3 text-mocha-700 transition duration-300 placeholder:text-mocha-300 focus:outline-none focus:ring-1"
+                  :class="phoneError ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : 'border-mocha-100 focus:border-mocha-300 focus:ring-mocha-300'"
                 />
+                <p v-if="phoneError" class="mt-1.5 text-xs tracking-wider text-red-500">{{ phoneError }}</p>
               </div>
 
               <div class="grid grid-cols-3 gap-3">
@@ -419,24 +469,26 @@ async function submitOrder() {
                     郵遞區號 *
                   </label>
                   <input
-                    v-model="booking.zipcode"
+                    v-model="bZipcode"
                     type="text"
-                    required
                     placeholder="100"
-                    class="w-full rounded-2xl border border-mocha-100 bg-cream px-4 py-3 text-mocha-700 transition duration-300 placeholder:text-mocha-300 focus:border-mocha-300 focus:outline-none focus:ring-1 focus:ring-mocha-300"
+                    class="w-full rounded-2xl border bg-cream px-4 py-3 text-mocha-700 transition duration-300 placeholder:text-mocha-300 focus:outline-none focus:ring-1"
+                    :class="zipcodeError ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : 'border-mocha-100 focus:border-mocha-300 focus:ring-mocha-300'"
                   />
+                  <p v-if="zipcodeError" class="mt-1.5 text-xs tracking-wider text-red-500">{{ zipcodeError }}</p>
                 </div>
                 <div class="col-span-2">
                   <label class="mb-1.5 block text-xs font-medium tracking-wider text-mocha-500">
                     地址 *
                   </label>
                   <input
-                    v-model="booking.addressDetail"
+                    v-model="bAddress"
                     type="text"
-                    required
                     placeholder="請輸入詳細地址"
-                    class="w-full rounded-2xl border border-mocha-100 bg-cream px-4 py-3 text-mocha-700 transition duration-300 placeholder:text-mocha-300 focus:border-mocha-300 focus:outline-none focus:ring-1 focus:ring-mocha-300"
+                    class="w-full rounded-2xl border bg-cream px-4 py-3 text-mocha-700 transition duration-300 placeholder:text-mocha-300 focus:outline-none focus:ring-1"
+                    :class="addressError ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : 'border-mocha-100 focus:border-mocha-300 focus:ring-mocha-300'"
                   />
+                  <p v-if="addressError" class="mt-1.5 text-xs tracking-wider text-red-500">{{ addressError }}</p>
                 </div>
               </div>
             </div>

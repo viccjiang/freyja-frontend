@@ -14,5 +14,9 @@ export const useCommonStore = defineStore(
       email,
     };
   },
-  { persist: true },
+  {
+    persist: {
+      pick: ['remember', 'email']
+    }
+  },
 );
