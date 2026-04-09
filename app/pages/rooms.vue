@@ -39,7 +39,7 @@ rooms.value = data.value?.result || []
               :src="room.imageUrl"
               :alt="room.name"
               class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
+            >
             <div v-else class="flex h-full items-center justify-center bg-latte text-mocha-300">
               <span class="text-5xl">🏨</span>
             </div>

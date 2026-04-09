@@ -120,7 +120,7 @@ watch(showBookingModal, (val) => {
               :src="room.imageUrlList[0]"
               :alt="room.name"
               class="h-full w-full object-cover"
-            />
+            >
           </div>
           <div v-if="room.imageUrlList.length > 1" class="hidden grid-cols-2 gap-1 md:grid">
             <div
@@ -132,12 +132,12 @@ watch(showBookingModal, (val) => {
                 :src="img"
                 :alt="`${room.name} ${idx + 2}`"
                 class="h-full w-full object-cover"
-              />
+              >
             </div>
           </div>
         </div>
         <div v-else-if="room.imageUrl" class="aspect-[21/9] overflow-hidden">
-          <img :src="room.imageUrl" :alt="room.name" class="h-full w-full object-cover" />
+          <img :src="room.imageUrl" :alt="room.name" class="h-full w-full object-cover" >
         </div>
       </div>
     </section>
@@ -431,7 +431,7 @@ watch(showBookingModal, (val) => {
                   placeholder="請輸入真實姓名"
                   class="w-full rounded-2xl border bg-cream px-4 py-3 text-mocha-700 transition duration-300 placeholder:text-mocha-300 focus:outline-none focus:ring-1"
                   :class="nameError ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : 'border-mocha-100 focus:border-mocha-300 focus:ring-mocha-300'"
-                />
+                >
                 <p v-if="nameError" class="mt-1.5 text-xs tracking-wider text-red-500">{{ nameError }}</p>
               </div>
 
@@ -445,7 +445,7 @@ watch(showBookingModal, (val) => {
                   placeholder="name@example.com"
                   class="w-full rounded-2xl border bg-cream px-4 py-3 text-mocha-700 transition duration-300 placeholder:text-mocha-300 focus:outline-none focus:ring-1"
                   :class="bEmailError ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : 'border-mocha-100 focus:border-mocha-300 focus:ring-mocha-300'"
-                />
+                >
                 <p v-if="bEmailError" class="mt-1.5 text-xs tracking-wider text-red-500">{{ bEmailError }}</p>
               </div>
 
@@ -459,7 +459,7 @@ watch(showBookingModal, (val) => {
                   placeholder="0912345678"
                   class="w-full rounded-2xl border bg-cream px-4 py-3 text-mocha-700 transition duration-300 placeholder:text-mocha-300 focus:outline-none focus:ring-1"
                   :class="phoneError ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : 'border-mocha-100 focus:border-mocha-300 focus:ring-mocha-300'"
-                />
+                >
                 <p v-if="phoneError" class="mt-1.5 text-xs tracking-wider text-red-500">{{ phoneError }}</p>
               </div>
 
@@ -474,7 +474,7 @@ watch(showBookingModal, (val) => {
                     placeholder="100"
                     class="w-full rounded-2xl border bg-cream px-4 py-3 text-mocha-700 transition duration-300 placeholder:text-mocha-300 focus:outline-none focus:ring-1"
                     :class="zipcodeError ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : 'border-mocha-100 focus:border-mocha-300 focus:ring-mocha-300'"
-                  />
+                  >
                   <p v-if="zipcodeError" class="mt-1.5 text-xs tracking-wider text-red-500">{{ zipcodeError }}</p>
                 </div>
                 <div class="col-span-2">
@@ -487,7 +487,7 @@ watch(showBookingModal, (val) => {
                     placeholder="請輸入詳細地址"
                     class="w-full rounded-2xl border bg-cream px-4 py-3 text-mocha-700 transition duration-300 placeholder:text-mocha-300 focus:outline-none focus:ring-1"
                     :class="addressError ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : 'border-mocha-100 focus:border-mocha-300 focus:ring-mocha-300'"
-                  />
+                  >
                   <p v-if="addressError" class="mt-1.5 text-xs tracking-wider text-red-500">{{ addressError }}</p>
                 </div>
               </div>

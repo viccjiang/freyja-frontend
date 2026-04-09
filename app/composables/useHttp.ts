@@ -3,7 +3,7 @@ import type { UseFetchOptions } from 'nuxt/app'
 
 type HttpOptions = Omit<UseFetchOptions<unknown>, 'method' | 'body'>
 
-async function request<T = any>(url: string, options: any) {
+async function request<T = unknown>(url: string, options: Record<string, unknown>) {
   const config = useRuntimeConfig()
   const token = useTokenCookie()
 
@@ -27,21 +27,21 @@ async function request<T = any>(url: string, options: any) {
 
   const params = defu(options, defaults)
 
-  const { data, status, error, refresh, clear, execute } = await useFetch<T>(url, params)
+  const { data, status, error, refresh, clear, execute } = await useFetch<T>(url, params as Parameters<typeof useFetch<T>>[1])
 
   return { data, status, error, refresh, clear, execute }
 }
 
 const Http = {
-  get: <T = any>(url: string, options: HttpOptions = {}) =>
+  get: <T = unknown>(url: string, options: HttpOptions = {}) =>
     request<T>(url, { ...options, method: 'GET' }),
-  post: <T = any>(url: string, body: unknown, options: HttpOptions = {}) =>
+  post: <T = unknown>(url: string, body: unknown, options: HttpOptions = {}) =>
     request<T>(url, { ...options, method: 'POST', body }),
-  put: <T = any>(url: string, body: unknown, options: HttpOptions = {}) =>
+  put: <T = unknown>(url: string, body: unknown, options: HttpOptions = {}) =>
     request<T>(url, { ...options, method: 'PUT', body }),
-  delete: <T = any>(url: string, options: HttpOptions = {}) =>
+  delete: <T = unknown>(url: string, options: HttpOptions = {}) =>
     request<T>(url, { ...options, method: 'DELETE' }),
-  patch: <T = any>(url: string, body: unknown, options: HttpOptions = {}) =>
+  patch: <T = unknown>(url: string, body: unknown, options: HttpOptions = {}) =>
     request<T>(url, { ...options, method: 'PATCH', body })
 }
 

@@ -110,7 +110,7 @@ const inputError = `${inputBase} border-red-300 focus:border-red-400 focus:ring-
               type="text"
               placeholder="請輸入姓名"
               :class="nameError ? inputError : inputNormal"
-            />
+            >
             <p v-if="nameError" class="mt-1.5 text-xs tracking-wider text-red-500">{{ nameError }}</p>
           </div>
 
@@ -123,7 +123,7 @@ const inputError = `${inputBase} border-red-300 focus:border-red-400 focus:ring-
               type="email"
               placeholder="name@example.com"
               :class="emailError ? inputError : inputNormal"
-            />
+            >
             <p v-if="emailError" class="mt-1.5 text-xs tracking-wider text-red-500">{{ emailError }}</p>
           </div>
 
@@ -136,7 +136,7 @@ const inputError = `${inputBase} border-red-300 focus:border-red-400 focus:ring-
               type="password"
               placeholder="至少 8 碼，含英文及數字"
               :class="passwordError ? inputError : inputNormal"
-            />
+            >
             <p v-if="passwordError" class="mt-1.5 text-xs tracking-wider text-red-500">{{ passwordError }}</p>
           </div>
 
@@ -149,7 +149,7 @@ const inputError = `${inputBase} border-red-300 focus:border-red-400 focus:ring-
               type="password"
               placeholder="請再次輸入密碼"
               :class="confirmPasswordError ? inputError : inputNormal"
-            />
+            >
             <p v-if="confirmPasswordError" class="mt-1.5 text-xs tracking-wider text-red-500">{{ confirmPasswordError }}</p>
           </div>
 
@@ -162,7 +162,7 @@ const inputError = `${inputBase} border-red-300 focus:border-red-400 focus:ring-
               type="tel"
               placeholder="0912345678"
               :class="phoneError ? inputError : inputNormal"
-            />
+            >
             <p v-if="phoneError" class="mt-1.5 text-xs tracking-wider text-red-500">{{ phoneError }}</p>
           </div>
 
@@ -201,7 +201,7 @@ const inputError = `${inputBase} border-red-300 focus:border-red-400 focus:ring-
                 type="text"
                 placeholder="100"
                 :class="zipcodeError ? inputError : inputNormal"
-              />
+              >
               <p v-if="zipcodeError" class="mt-1.5 text-xs tracking-wider text-red-500">{{ zipcodeError }}</p>
             </div>
             <div class="col-span-2">
@@ -213,7 +213,7 @@ const inputError = `${inputBase} border-red-300 focus:border-red-400 focus:ring-
                 type="text"
                 placeholder="請輸入詳細地址"
                 :class="addressDetailError ? inputError : inputNormal"
-              />
+              >
               <p v-if="addressDetailError" class="mt-1.5 text-xs tracking-wider text-red-500">{{ addressDetailError }}</p>
             </div>
           </div>

@@ -78,7 +78,7 @@ await fetchRooms()
                   :src="room.imageUrl"
                   :alt="room.name"
                   class="h-full w-full object-cover"
-                />
+                >
               </div>
             </td>
             <td class="px-6 py-4">

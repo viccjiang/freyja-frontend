@@ -72,7 +72,7 @@ await fetchOrders()
               :src="order.roomId.imageUrl"
               :alt="order.roomId?.name"
               class="h-full w-full object-cover"
-            />
+            >
           </div>
 
           <!-- Order Info -->

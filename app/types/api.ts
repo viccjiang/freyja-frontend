@@ -1,6 +1,6 @@
 // ========== 通用 ==========
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   status: boolean
   result: T
   token?: string

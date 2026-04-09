@@ -18,10 +18,10 @@ rooms.value = (data.value?.result || []).slice(0, 3)
       <div class="relative mx-auto max-w-2xl">
         <p class="font-display text-sm tracking-[0.3em] text-mocha-200">LUXURY &amp; COMFORT</p>
         <h1 class="mt-6 font-display text-5xl font-light leading-relaxed tracking-wider">
-          放慢腳步<br />享受每一刻
+          放慢腳步<br >享受每一刻
         </h1>
         <p class="mx-auto mt-8 max-w-md text-base leading-loose tracking-wide text-white/70">
-          Luxt 旅館藏身於城市中最靜謐的角落，<br />讓時間慢下來，讓旅行成為一種生活
+          Luxt 旅館藏身於城市中最靜謐的角落，<br >讓時間慢下來，讓旅行成為一種生活
         </p>
         <NuxtLink
           to="/rooms"
@@ -45,7 +45,7 @@ rooms.value = (data.value?.result || []).slice(0, 3)
             24 小時管家服務
           </h3>
           <p class="mt-3 text-sm leading-relaxed tracking-wide text-mocha-400">
-            專屬管家全天候待命<br />滿足您的一切需求
+            專屬管家全天候待命<br >滿足您的一切需求
           </p>
         </div>
         <div class="text-center">
@@ -58,7 +58,7 @@ rooms.value = (data.value?.result || []).slice(0, 3)
             精緻餐飲體驗
           </h3>
           <p class="mt-3 text-sm leading-relaxed tracking-wide text-mocha-400">
-            由米其林主廚掌勺<br />提供在地與國際風味料理
+            由米其林主廚掌勺<br >提供在地與國際風味料理
           </p>
         </div>
         <div class="text-center">
@@ -71,7 +71,7 @@ rooms.value = (data.value?.result || []).slice(0, 3)
             頂級 SPA 放鬆
           </h3>
           <p class="mt-3 text-sm leading-relaxed tracking-wide text-mocha-400">
-            結合東西方療法的養生 SPA<br />讓身心徹底放鬆
+            結合東西方療法的養生 SPA<br >讓身心徹底放鬆
           </p>
         </div>
       </div>
@@ -101,7 +101,7 @@ rooms.value = (data.value?.result || []).slice(0, 3)
                 :src="room.imageUrl"
                 :alt="room.name"
                 class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
+              >
             </div>
             <div class="p-6">
               <h3 class="font-display text-lg font-medium tracking-wider text-mocha-700">

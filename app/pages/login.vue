@@ -81,7 +81,7 @@ const onSubmit = handleSubmit(async (values) => {
               placeholder="name@example.com"
               class="w-full rounded-2xl border bg-cream px-4 py-3 text-mocha-700 transition duration-300 placeholder:text-mocha-300 focus:outline-none focus:ring-1"
               :class="emailError ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : 'border-mocha-100 focus:border-mocha-300 focus:ring-mocha-300'"
-            />
+            >
             <p v-if="emailError" class="mt-1.5 text-xs tracking-wider text-red-500">{{ emailError }}</p>
           </div>
 
@@ -95,13 +95,13 @@ const onSubmit = handleSubmit(async (values) => {
               placeholder="請輸入密碼（至少 8 碼，含英文及數字）"
               class="w-full rounded-2xl border bg-cream px-4 py-3 text-mocha-700 transition duration-300 placeholder:text-mocha-300 focus:outline-none focus:ring-1"
               :class="passwordError ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : 'border-mocha-100 focus:border-mocha-300 focus:ring-mocha-300'"
-            />
+            >
             <p v-if="passwordError" class="mt-1.5 text-xs tracking-wider text-red-500">{{ passwordError }}</p>
           </div>
 
           <div class="flex items-center justify-between">
             <label class="flex cursor-pointer items-center gap-2 text-sm tracking-wider text-mocha-400">
-              <input v-model="remember" type="checkbox" class="accent-mocha-500" />
+              <input v-model="remember" type="checkbox" class="accent-mocha-500" >
               記住帳號
             </label>
           </div>
